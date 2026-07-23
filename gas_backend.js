@@ -86,14 +86,7 @@ function doPost(e) {
   const events = eventData.events;
   if (!events || events.length === 0) return;
   
-  // 建立 Script 鎖，防止同時傳送多張照片時發生「並發衝突 (Race Condition)」產生多個資料夾
-  const lock = LockService.getScriptLock();
-  
-  try {
-    // 最多等待 30 秒讓前一個處理程序完成
-    lock.waitLock(30000);
-    
-    events.forEach(function(event) {
+  events.forEach(function(event) {
       const replyToken = event.replyToken;
       const userId = event.source.userId;
       const groupId = event.source.groupId || '非群組';
@@ -141,13 +134,6 @@ function doPost(e) {
         PropertiesService.getScriptProperties().setProperty('TARGET_AI_FOLDER_ID', folder.getId());
       }
     });
-    
-  } catch (error) {
-    console.error("Lock error: " + error.toString());
-  } finally {
-    // 釋放鎖定，讓下一張照片開始處理
-    lock.releaseLock();
-  }
   
   return ContentService.createTextOutput("OK");
 }
@@ -207,19 +193,29 @@ function getUserProfile(userId) {
 }
 
 function getOrCreateDateFolder(dateString) {
-  const rootFolder = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
-  const subFolders = rootFolder.getFolders();
-  
-  // 尋找開頭是該日期的資料夾 (例如 2026-07-23 或 2026-07-23 - 貓咪)
-  while (subFolders.hasNext()) {
-    const folder = subFolders.next();
-    if (folder.getName().startsWith(dateString)) {
-      return folder;
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(30000); // 只鎖定資料夾建立的瞬間
+    const rootFolder = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
+    const subFolders = rootFolder.getFolders();
+    
+    // 尋找開頭是該日期的資料夾 (例如 2026-07-23 或 2026-07-23 - 貓咪)
+    while (subFolders.hasNext()) {
+      const folder = subFolders.next();
+      if (folder.getName().startsWith(dateString)) {
+        return folder;
+      }
     }
+    
+    // 沒找到就建立一個新的
+    return rootFolder.createFolder(dateString);
+  } catch (e) {
+    console.error("Folder Lock Error:", e);
+    // 萬一真的 timeout，退回存放至根目錄，避免照片遺失
+    return DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID); 
+  } finally {
+    lock.releaseLock();
   }
-  
-  // 沒找到就建立一個新的
-  return rootFolder.createFolder(dateString);
 }
 
 // ==========================================
