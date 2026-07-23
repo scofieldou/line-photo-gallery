@@ -178,23 +178,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (file.type === 'video') {
             modalImg.classList.add('hidden');
             modalVideo.classList.remove('hidden');
-            modalVideo.src = file.url; // 載入 iframe 影片
-        } else {
-            // 為了避免 Google Drive 阻擋原圖導致縮圖被放大變馬賽克，
-            // 圖片放大時也改用 Google Drive 的原生高畫質 iframe 預覽器
-            const match = file.url.match(/id=([a-zA-Z0-9_-]+)/);
+            
+            // 將 /preview 連結轉為直接下載連結，提供給原生 video 標籤無縫播放
+            const match = file.url.match(/d\/([a-zA-Z0-9_-]+)\/preview/);
             if (match && match[1]) {
-                const highResPreviewUrl = `https://drive.google.com/file/d/${match[1]}/preview`;
-                modalImg.classList.add('hidden');
-                modalVideo.classList.remove('hidden');
-                modalVideo.src = highResPreviewUrl;
+                modalVideo.src = `https://drive.google.com/uc?export=download&id=${match[1]}`;
             } else {
-                // 退回使用原本的 img 標籤 (防呆)
-                modalVideo.classList.add('hidden');
-                modalImg.classList.remove('hidden');
-                modalImg.src = file.url;
-                modalImg.referrerPolicy = 'no-referrer';
+                modalVideo.src = file.url; 
             }
+        } else {
+            modalVideo.classList.add('hidden');
+            modalImg.classList.remove('hidden');
+            modalImg.src = file.url;
+            modalImg.referrerPolicy = 'no-referrer';
         }
     }
 
