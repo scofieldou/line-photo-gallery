@@ -99,7 +99,14 @@ function doPost(e) {
       const groupId = event.source.groupId || '非群組';
       
       if (CONFIG.TARGET_GROUP_ID !== '' && groupId !== CONFIG.TARGET_GROUP_ID) return;
-      if (CONFIG.TARGET_USER_ID !== '' && userId !== CONFIG.TARGET_USER_ID) return;
+      
+      // 驗證 User ID (支援單一字串、逗號分隔字串，或陣列)
+      if (CONFIG.TARGET_USER_ID !== '') {
+        const allowedUsers = Array.isArray(CONFIG.TARGET_USER_ID) 
+            ? CONFIG.TARGET_USER_ID 
+            : CONFIG.TARGET_USER_ID.split(',').map(id => id.trim());
+        if (!allowedUsers.includes(userId)) return;
+      }
       
       if (event.type === 'message' && (event.message.type === 'image' || event.message.type === 'video')) {
         const messageId = event.message.id;
