@@ -98,6 +98,15 @@ function doPost(e) {
       const userId = event.source.userId;
       const groupId = event.source.groupId || '非群組';
       
+      // 處理文字指令 (!找ID) - 不受白名單限制
+      if (event.type === 'message' && event.message.type === 'text') {
+        if (event.message.text.trim() === '!找ID') {
+          const replyText = `[您的 ID 資訊]\nUser ID: ${userId}\nGroup ID: ${groupId}`;
+          replyToLine(replyToken, replyText);
+          return;
+        }
+      }
+      
       if (CONFIG.TARGET_GROUP_ID !== '' && groupId !== CONFIG.TARGET_GROUP_ID) return;
       
       // 驗證 User ID (支援單一字串、逗號分隔字串，或陣列)
@@ -142,13 +151,38 @@ function doPost(e) {
   return ContentService.createTextOutput("OK");
 }
 
+// ==========================================
+// 📥 輔助工具：從 LINE 下載檔案
+// ==========================================
 function downloadFromLine(messageId) {
-  const url = `https://api-data.line.me/v2/bot/message/${messageId}/content`;
-  const response = UrlFetchApp.fetch(url, {
-    method: 'get',
-    headers: { 'Authorization': 'Bearer ' + CONFIG.LINE_ACCESS_TOKEN }
-  });
+  const url = 'https://api-data.line.me/v2/bot/message/' + messageId + '/content';
+  const options = {
+    "method": "get",
+    "headers": {
+      "Authorization": "Bearer " + CONFIG.LINE_ACCESS_TOKEN
+    }
+  };
+  const response = UrlFetchApp.fetch(url, options);
   return response.getBlob();
+}
+
+// ==========================================
+// 📤 輔助工具：回覆 LINE 訊息
+// ==========================================
+function replyToLine(replyToken, text) {
+  const url = 'https://api.line.me/v2/bot/message/reply';
+  const options = {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + CONFIG.LINE_ACCESS_TOKEN
+    },
+    payload: JSON.stringify({
+      replyToken: replyToken,
+      messages: [{ type: 'text', text: text }]
+    })
+  };
+  UrlFetchApp.fetch(url, options);
 }
 
 function getOrCreateDateFolder(dateString) {
