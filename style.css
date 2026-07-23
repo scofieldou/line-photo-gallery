@@ -266,12 +266,11 @@ h1 {
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-/* 影片播放器專屬 */
-video.modal-content {
+/* Iframe 影片專屬 */
+iframe.modal-content {
     width: 100%;
     height: 100%;
     background: #000;
-    outline: none;
 }
 
 #caption {

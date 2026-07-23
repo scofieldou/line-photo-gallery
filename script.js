@@ -178,14 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (file.type === 'video') {
             modalImg.classList.add('hidden');
             modalVideo.classList.remove('hidden');
-            
-            // 將 /preview 連結轉為直接下載連結，提供給原生 video 標籤無縫播放
-            const match = file.url.match(/d\/([a-zA-Z0-9_-]+)\/preview/);
-            if (match && match[1]) {
-                modalVideo.src = `https://drive.google.com/uc?export=download&id=${match[1]}`;
-            } else {
-                modalVideo.src = file.url; 
-            }
+            modalVideo.src = file.url; // 載入 iframe 影片
         } else {
             modalVideo.classList.add('hidden');
             modalImg.classList.remove('hidden');
