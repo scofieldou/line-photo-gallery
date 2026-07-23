@@ -120,10 +120,16 @@ document.addEventListener('DOMContentLoaded', () => {
             img.referrerPolicy = 'no-referrer';
 
             if (file.type === 'video') {
-                // 如果是影片，套用影片專用樣式與圖示
-                img.src = 'https://img.icons8.com/color/480/video.png'; // 預設影片縮圖
-                img.style.objectFit = 'contain';
-                img.style.padding = '20px';
+                // 如果是影片，嘗試去跟 Google Drive 要第一秒的縮圖
+                const match = file.url.match(/d\/([a-zA-Z0-9_-]+)\/preview/);
+                if (match && match[1]) {
+                    img.src = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w600`;
+                    img.style.objectFit = 'cover';
+                } else {
+                    img.src = 'https://img.icons8.com/color/480/video.png'; // 預防萬一的預設圖
+                    img.style.objectFit = 'contain';
+                    img.style.padding = '20px';
+                }
                 
                 const badge = document.createElement('div');
                 badge.className = 'video-badge';
