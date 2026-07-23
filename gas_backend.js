@@ -248,7 +248,8 @@ function triggerAiNaming() {
   const files = folder.getFiles();
   const base64Images = [];
   
-  while (files.hasNext() && base64Images.length < 2) {
+  // 隨機抽樣或取前 N 張 (建議 5~10 張，這裡預設取 5 張)
+  while (files.hasNext() && base64Images.length < 5) {
     const file = files.next();
     if (file.getMimeType().indexOf('image/') !== -1) {
        const base64 = Utilities.base64Encode(file.getBlob().getBytes());
