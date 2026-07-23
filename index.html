@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LINE 群組專屬相簿</title>
+    <meta name="description" content="自動收集自 LINE 群組的專屬相簿">
+    <meta name="referrer" content="no-referrer">
+    <link rel="stylesheet" href="./style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>✨ 群組回憶錄</h1>
+            <p>自動整理來自 LINE 的珍貴相簿</p>
+        </header>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>正在從雲端讀取資料...</p>
+        </div>
+
+        <div id="error-message" class="error hidden"></div>
+
+        <!-- 第一層：相簿牆 -->
+        <main id="albums-view" class="grid-container hidden">
+            <!-- 動態插入相簿卡片 -->
+        </main>
+
+        <!-- 第二層：相片牆 -->
+        <main id="photos-view" class="hidden">
+            <button id="back-btn" class="back-btn">⬅ 返回相簿列表</button>
+            <h2 id="current-album-title" class="album-title"></h2>
+            <div id="gallery" class="grid-container">
+                <!-- 動態插入照片與影片卡片 -->
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by Google Apps Script & GitHub Pages</p>
+        </footer>
+    </div>
+
+    <!-- 圖片/影片放大檢視的 Modal -->
+    <div id="media-modal" class="modal hidden">
+        <span class="close-btn">&times;</span>
+        <div class="modal-content-wrapper">
+            <img class="modal-content hidden" id="modal-img">
+            <iframe class="modal-content hidden" id="modal-video" frameborder="0" allowfullscreen></iframe>
+        </div>
+        <div id="caption"></div>
+    </div>
+
+    <script src="./script.js"></script>
+</body>
+</html>
