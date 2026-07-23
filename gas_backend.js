@@ -101,7 +101,8 @@ function doPost(e) {
       // 處理文字指令 (!找ID) - 不受白名單限制
       if (event.type === 'message' && event.message.type === 'text') {
         if (event.message.text.trim() === '!找ID') {
-          const replyText = `[您的 ID 資訊]\nUser ID: ${userId}\nGroup ID: ${groupId}`;
+          const userName = getUserProfile(userId);
+          const replyText = `[${userName} 的 ID 資訊]\nUser ID: ${userId}\nGroup ID: ${groupId}`;
           replyToLine(replyToken, replyText);
           return;
         }
@@ -183,6 +184,26 @@ function replyToLine(replyToken, text) {
     })
   };
   UrlFetchApp.fetch(url, options);
+}
+
+// ==========================================
+// 🧑‍🤝‍🧑 輔助工具：取得 LINE 使用者名稱
+// ==========================================
+function getUserProfile(userId) {
+  try {
+    const url = 'https://api.line.me/v2/bot/profile/' + userId;
+    const options = {
+      "method": "get",
+      "headers": {
+        "Authorization": "Bearer " + CONFIG.LINE_ACCESS_TOKEN
+      }
+    };
+    const response = UrlFetchApp.fetch(url, options);
+    const data = JSON.parse(response.getContentText());
+    return data.displayName || "未知用戶";
+  } catch (e) {
+    return "未知用戶";
+  }
 }
 
 function getOrCreateDateFolder(dateString) {
