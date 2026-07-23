@@ -244,26 +244,33 @@ function triggerAiNaming() {
       return;
   }
   
-  // 撈出資料夾裡的前 2 張照片給 AI 判斷 (避免傳送過多資料超載)
+  // 撈出資料夾裡的所有照片
   const files = folder.getFiles();
-  const base64Images = [];
-  
-  // 隨機抽樣或取前 N 張 (建議 5~10 張，這裡預設取 5 張)
-  while (files.hasNext() && base64Images.length < 5) {
+  const allImages = [];
+  while (files.hasNext()) {
     const file = files.next();
     if (file.getMimeType().indexOf('image/') !== -1) {
-       const base64 = Utilities.base64Encode(file.getBlob().getBytes());
-       base64Images.push({
-           "inline_data": {
-               "mime_type": file.getMimeType(),
-               "data": base64
-           }
-       });
+       allImages.push(file);
     }
   }
   
   // 如果沒有照片(只有影片) 或 API Key 沒填，就跳過
-  if (base64Images.length === 0 || CONFIG.GEMINI_API_KEY.includes('請填入')) return;
+  if (allImages.length === 0 || CONFIG.GEMINI_API_KEY.includes('請填入')) return;
+  
+  // 隨機打亂陣列順序，抽取 5 張
+  allImages.sort(() => 0.5 - Math.random());
+  const sampleImages = allImages.slice(0, 5);
+  
+  const base64Images = [];
+  for (const file of sampleImages) {
+    const base64 = Utilities.base64Encode(file.getBlob().getBytes());
+    base64Images.push({
+        "inline_data": {
+            "mime_type": file.getMimeType(),
+            "data": base64
+        }
+    });
+  }
   
   // 準備呼叫最新的 Gemini Flash API
   const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${CONFIG.GEMINI_API_KEY}`;
